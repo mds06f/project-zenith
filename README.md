@@ -1,36 +1,48 @@
 # Project Zenith: The Celestial Eye
 
-Project Zenith is an interactive web platform developed for **AstralWeb Innovate 2026**. The platform enables users to visualize real-time celestial activity above any location on Earth through satellite tracking, orbit visualization, geospatial mapping, and astronomical data integration.
+Project Zenith is an interactive web platform developed for **AstralWeb Innovate 2026**. The platform enables users to visualize real-time celestial activity above any location on Earth through satellite tracking, orbit visualization, geospatial mapping, and live astronomical data integration.
 
 ## Objective
 
-To provide an engaging and accessible platform for exploring real-time astronomical phenomena by combining geospatial visualization, satellite tracking, and live celestial data into a unified user experience.
+To create a real-time celestial intelligence platform that transforms complex astronomical and satellite data into accessible, interactive, and visually engaging insights for users around the world.
 
 ---
 
-## Features
+## Key Features
 
-* Real-time celestial tracking
-* Interactive Earth globe visualization
-* Satellite orbit visualization
+* Real-time celestial activity visualization
+* Interactive 3D Earth globe powered by CesiumJS
+* Live satellite and ISS tracking
+* Orbit path visualization
 * Location-based sky analysis
-* ISS and satellite visibility tracking
-* Coordinate-based celestial insights
-* Responsive dashboard for desktop, tablet, and mobile devices
-* Modern and intuitive user interface
+* Celestial visibility insights
+* Observation Quality Score
+* Future celestial timeline simulation
+* Coordinate-based celestial exploration
+* Responsive dashboard across desktop, tablet, and mobile devices
+* Educational sky insights and object information
 
 ---
 
 ## Planned Modules
 
+### Core Modules
+
 * Interactive Globe
 * Celestial Dashboard
 * Satellite Tracker
 * Orbit Visualization
-* Location Search
-* Visibility Analysis
+* Object Inspector
+* Location Search & Geolocation
+* Observation Quality Analyzer
+* Future Timeline Simulation
+
+### Advanced Modules
+
+* Real-Time WebSocket Updates
 * Coordinate Challenge Support
-* Real-Time Data Integration
+* Celestial Event Detection
+* Educational Sky Insights
 
 ---
 
@@ -39,33 +51,83 @@ To provide an engaging and accessible platform for exploring real-time astronomi
 ### Frontend
 
 * React
-* Next.js
+* vite
 * TypeScript
 * Tailwind CSS
 * CesiumJS
+* shadcn/ui
 
 ### Backend
 
 * Node.js
 * Express.js
+* socket.io
+* WebSockets (Real-Time Updates)
 
 ### Development Tools
 
 * Git & GitHub
-* Vercel (Deployment)
-* Figma (UI/UX Design)
+* Vercel
+* Figma
 
 ---
 
 ## APIs & Data Sources (Planned)
 
+### Astronomical Data
+
 * NASA APIs
-* Open Notify API
+* Astronomy APIs
 * Satellite TLE Data
-* Astronomical Data Services
-* Geospatial Mapping Services
+
+### Satellite Tracking
+
+* Open Notify API
+* N2YO API (Subject to Availability)
+
+### Environmental Data
+
+* Open-Meteo API
+* Light Pollution Datasets
+
+### Geospatial Services
+
+* Geolocation Services
+* Mapping & Coordinate Systems
 
 > APIs and data sources may be refined during the architecture and implementation phase.
+
+---
+
+## System Overview
+
+```text
+User
+ │
+ ▼
+React + CesiumJS Frontend
+ │
+ ▼
+Socket.IO Client
+ │
+ ▼
+Express API Gateway
+ │
+ ├── NASA APIs
+ ├── Astronomy APIs
+ ├── Satellite Data
+ ├── Weather Data
+ └── Geospatial Services
+ │
+ ▼
+Data Processing Layer
+ │
+ ▼
+Socket.IO Server
+ │
+ ▼
+Real-Time Updates
+```
 
 ---
 
@@ -96,11 +158,11 @@ project-zenith/
 
 ## Team
 
-| Member          | Role                                  |
-| --------------- | ------------------------------------- |
-| Madhurima Das   | UI/UX Design & Frontend Development   |
-| Samman Das      | Backend Development & API Integration |
-| Debanjan Sarkar | Research, Data Analysis & Support     |
+| Member          | Role                                                 |
+| --------------- | ---------------------------------------------------- |
+| Madhurima Das   | UI/UX Design, Frontend Development & User Experience |
+| Samman Das      | Backend Development, APIs & Real-Time Systems        |
+| Debanjan Sarkar | Research, Data Analysis & Documentation              |
 
 ---
 
@@ -110,7 +172,7 @@ project-zenith/
 
 **Theme:** Project Zenith – The Celestial Eye
 
-A national-level web development challenge focused on building innovative platforms capable of visualizing real-time celestial activity above any location on Earth through modern web technologies, geospatial mapping, and astronomical data integration.
+A national-level web development challenge focused on building innovative platforms capable of visualizing real-time celestial activity above any location on Earth through modern web technologies, geospatial mapping, satellite tracking, and astronomical data integration.
 
 ---
 
@@ -118,7 +180,20 @@ A national-level web development challenge focused on building innovative platfo
 
 🚀 Actively under development for AstralWeb Innovate 2026.
 
-Current Phase:
-- Blueprint & Architecture Design
-- UI/UX Planning
-- Technology Evaluation
+### Current Phase
+
+* Blueprint & Architecture Design
+* API Research & Evaluation
+* UI/UX Planning & Wireframing
+* Technology Stack Finalization
+
+### Upcoming Milestones
+
+* Interactive Globe Integration
+* Real-Time Data Pipeline
+* WebSocket Infrastructure
+* Dashboard Development
+* Round 1 Blueprint Submission
+
+```
+```
