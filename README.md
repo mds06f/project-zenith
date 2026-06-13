@@ -196,4 +196,3 @@ A national-level web development challenge focused on building innovative platfo
 * Round 1 Blueprint Submission
 
 ```
-```
