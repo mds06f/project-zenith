@@ -55,6 +55,7 @@ To create a real-time celestial intelligence platform that transforms complex as
 * TypeScript
 * Tailwind CSS
 * CesiumJS
+* ThreeJS
 * shadcn/ui
 
 ### Backend
