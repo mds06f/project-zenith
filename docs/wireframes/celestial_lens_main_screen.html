@@ -1,0 +1,332 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .screen {
+    max-width: 420px;
+    margin: 1.5rem auto;
+    background: #0A0E1A;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    font-family: var(--font-sans);
+    color: #E8EAF0;
+  }
+  .topbar {
+    background: #0D1221;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .topbar-icon { color: #7B93FF; font-size: 18px; }
+  .topbar-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: #B8C4F0;
+    text-transform: uppercase;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+    padding: 16px 20px;
+    background: #0A0E1A;
+  }
+  .search-box {
+    flex: 1;
+    background: #141828;
+    border: 0.5px solid rgba(123, 147, 255, 0.25);
+    border-radius: 10px;
+    padding: 9px 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6B7A9E;
+    font-size: 13px;
+  }
+  .search-box i { font-size: 15px; color: #4A5580; }
+  .gps-btn {
+    background: #1A2040;
+    border: 0.5px solid rgba(123, 147, 255, 0.3);
+    border-radius: 10px;
+    padding: 9px 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #7B93FF;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .gps-btn i { font-size: 14px; }
+
+  .globe-section {
+    margin: 0 20px 16px;
+    background: linear-gradient(160deg, #0F1530 0%, #0D1221 60%, #0A1A28 100%);
+    border-radius: 16px;
+    border: 0.5px solid rgba(123, 147, 255, 0.15);
+    height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .globe-stars {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px);
+    background-size: 30px 30px;
+    opacity: 0.18;
+  }
+  .globe-ring {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(123, 147, 255, 0.35);
+    position: absolute;
+    box-shadow: inset 0 0 30px rgba(123, 147, 255, 0.07);
+  }
+  .globe-ring-2 {
+    width: 140px; height: 140px;
+    border: 0.5px solid rgba(123, 147, 255, 0.12);
+  }
+  .globe-ring-3 {
+    width: 70px; height: 70px;
+    border: 0.5px solid rgba(100, 180, 255, 0.2);
+  }
+  .globe-label {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+  .globe-label .gl-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: #7B93FF;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .globe-label .gl-sub {
+    font-size: 11px;
+    color: #3D4F7A;
+  }
+  .globe-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #7B93FF;
+    box-shadow: 0 0 8px #7B93FF;
+    position: absolute;
+    top: 38px; right: 55px;
+    z-index: 3;
+  }
+  .globe-dot-2 {
+    width: 4px; height: 4px;
+    background: #64C8FF;
+    box-shadow: 0 0 6px #64C8FF;
+    bottom: 42px; left: 48px;
+    top: auto;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 20px 16px;
+  }
+  .stat-card {
+    background: #0F1526;
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .stat-card-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #4A5580;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .stat-score {
+    font-size: 28px;
+    font-weight: 500;
+    color: #E8EAF0;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-denom {
+    font-size: 13px;
+    color: #3D4F7A;
+  }
+  .stat-badge {
+    display: inline-block;
+    background: rgba(100, 220, 150, 0.12);
+    border: 0.5px solid rgba(100, 220, 150, 0.25);
+    color: #64DC96;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    margin-top: 6px;
+  }
+  .visible-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .visible-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #B0BCDC;
+  }
+  .visible-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #7B93FF;
+    flex-shrink: 0;
+  }
+  .visible-dot.iss { background: #64DC96; }
+  .visible-dot.saturn { background: #FFD580; }
+  .visible-dot.jupiter { background: #FFB080; }
+
+  .events-card {
+    margin: 0 20px 16px;
+    background: #0F1526;
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .events-header {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #4A5580;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .event-icon.iss { background: rgba(100, 220, 150, 0.1); color: #64DC96; }
+  .event-icon.meteor { background: rgba(255, 180, 80, 0.1); color: #FFB450; }
+  .event-icon.moon { background: rgba(180, 160, 255, 0.1); color: #B4A0FF; }
+  .event-name {
+    flex: 1;
+    font-size: 13px;
+    color: #C8D0E8;
+    font-weight: 500;
+  }
+  .event-time {
+    font-size: 12px;
+    color: #4A5580;
+  }
+
+  .explain-btn {
+    margin: 0 20px 20px;
+    background: #7B93FF;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    width: calc(100% - 40px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+  }
+</style>
+
+<div class="screen">
+  <div class="topbar">
+    <i class="ti ti-telescope topbar-icon" aria-hidden="true"></i>
+    <span class="topbar-title">Celestial Lens</span>
+  </div>
+
+  <div class="search-row">
+    <div class="search-box">
+      <i class="ti ti-search" aria-hidden="true"></i>
+      <span>Search location...</span>
+    </div>
+    <div class="gps-btn">
+      <i class="ti ti-current-location" aria-hidden="true"></i>
+      Use GPS
+    </div>
+  </div>
+
+  <div class="globe-section">
+    <div class="globe-stars"></div>
+    <div class="globe-ring globe-ring-2"></div>
+    <div class="globe-ring"></div>
+    <div class="globe-ring globe-ring-3"></div>
+    <div class="globe-dot"></div>
+    <div class="globe-dot globe-dot-2"></div>
+    <div class="globe-label">
+      <div class="gl-title">3D Celestial Globe</div>
+      <div class="gl-sub">Cesium Earth Visualization</div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-label">Observation Score</div>
+      <div class="stat-score">87<span class="stat-denom"> / 100</span></div>
+      <div class="stat-badge">Excellent</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Visible Tonight</div>
+      <div class="visible-list">
+        <div class="visible-item"><span class="visible-dot iss"></span>ISS</div>
+        <div class="visible-item"><span class="visible-dot saturn"></span>Saturn</div>
+        <div class="visible-item"><span class="visible-dot jupiter"></span>Jupiter</div>
+        <div class="visible-item"><span class="visible-dot"></span>Vega</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="events-card">
+    <div class="events-header">Upcoming Events</div>
+    <div class="event-row">
+      <div class="event-icon iss"><i class="ti ti-satellite" aria-hidden="true"></i></div>
+      <span class="event-name">ISS Pass</span>
+      <span class="event-time">14 min</span>
+    </div>
+    <div class="event-row">
+      <div class="event-icon meteor"><i class="ti ti-meteor" aria-hidden="true"></i></div>
+      <span class="event-name">Meteor Shower</span>
+      <span class="event-time">Tonight</span>
+    </div>
+    <div class="event-row">
+      <div class="event-icon moon"><i class="ti ti-moon" aria-hidden="true"></i></div>
+      <span class="event-name">Moonrise</span>
+      <span class="event-time">8:47 PM</span>
+    </div>
+  </div>
+
+  <button class="explain-btn">
+    <i class="ti ti-sparkles" aria-hidden="true"></i>
+    Explain Tonight's Sky
+  </button>
+</div>

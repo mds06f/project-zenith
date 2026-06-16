@@ -1,0 +1,314 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .screen2 {
+    max-width: 420px;
+    margin: 1.5rem auto;
+    background: #0A0E1A;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    font-family: var(--font-sans);
+    color: #E8EAF0;
+  }
+  .topbar2 {
+    background: #0D1221;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-btn {
+    width: 32px; height: 32px;
+    background: #141828;
+    border-radius: 8px;
+    border: 0.5px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    color: #7B93FF; font-size: 16px; cursor: pointer;
+  }
+  .topbar2-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: #B8C4F0;
+    text-transform: uppercase;
+  }
+  .topbar2-badge {
+    background: rgba(100, 220, 150, 0.1);
+    border: 0.5px solid rgba(100, 220, 150, 0.25);
+    color: #64DC96;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .live-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: #64DC96;
+  }
+
+  .meta-card {
+    margin: 16px 20px 0;
+    background: #0F1526;
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+  .meta-item { text-align: center; }
+  .meta-label {
+    font-size: 10px;
+    color: #4A5580;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .meta-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: #E8EAF0;
+  }
+  .meta-value span { font-size: 11px; color: #4A5580; }
+
+  .orbit-section {
+    margin: 12px 20px;
+    background: #0D1526;
+    border: 0.5px solid rgba(123, 147, 255, 0.15);
+    border-radius: 16px;
+    height: 160px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .orbit-bg {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.12;
+  }
+  .orbit-earth {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #1A5FA0, #0B2D52);
+    border: 1.5px solid rgba(100, 180, 255, 0.3);
+    position: absolute;
+    box-shadow: 0 0 16px rgba(100, 180, 255, 0.08);
+  }
+  .orbit-path {
+    position: absolute;
+    width: 140px; height: 55px;
+    border-radius: 50%;
+    border: 1px dashed rgba(123, 147, 255, 0.22);
+  }
+  .orbit-path-2 {
+    width: 200px; height: 78px;
+    border-color: rgba(123, 147, 255, 0.1);
+  }
+  .orbit-iss {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #64DC96;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #64DC96;
+    top: 42px; right: 68px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .orbit-iss-wings {
+    width: 18px; height: 4px;
+    background: rgba(100, 220, 150, 0.4);
+    border-radius: 1px;
+    position: absolute;
+  }
+  .orbit-label {
+    position: absolute;
+    bottom: 12px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3D4F7A;
+  }
+  .orbit-title {
+    position: relative; z-index: 2;
+    display: none;
+  }
+
+  .visibility-row {
+    margin: 0 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: rgba(123, 147, 255, 0.06);
+    border: 0.5px solid rgba(123, 147, 255, 0.18);
+    border-radius: 12px;
+  }
+  .visibility-icon { font-size: 18px; color: #7B93FF; }
+  .visibility-text { font-size: 13px; color: #B0BCDC; }
+  .visibility-time { font-weight: 500; color: #7B93FF; }
+
+  .timeline-card {
+    margin: 0 20px 12px;
+    background: #0F1526;
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .timeline-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #4A5580;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .timeline-track {
+    position: relative;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+  .timeline-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 22%;
+    background: #7B93FF;
+    border-radius: 2px;
+  }
+  .timeline-dot {
+    position: absolute;
+    width: 10px; height: 10px;
+    background: #7B93FF;
+    border-radius: 50%;
+    top: -3px; left: calc(22% - 5px);
+    border: 2px solid #0A0E1A;
+    box-shadow: 0 0 6px #7B93FF;
+  }
+  .timeline-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: #4A5580;
+  }
+  .timeline-labels .active { color: #7B93FF; font-weight: 500; }
+
+  .obs-card {
+    margin: 0 20px 16px;
+    background: #0F1526;
+    border: 0.5px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .obs-header {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #4A5580;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .obs-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  }
+  .obs-row:last-child { border-bottom: none; }
+  .obs-icon { font-size: 15px; color: #4A5580; width: 18px; text-align: center; }
+  .obs-name { flex: 1; font-size: 13px; color: #8090B0; }
+  .obs-val { font-size: 13px; color: #C8D0E8; font-weight: 500; }
+
+  .alert-btn {
+    margin: 0 20px 20px;
+    background: transparent;
+    border: 1px solid rgba(123, 147, 255, 0.4);
+    border-radius: 12px;
+    padding: 14px;
+    width: calc(100% - 40px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #7B93FF;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+</style>
+
+<div class="screen2">
+  <div class="topbar2">
+    <div class="back-btn"><i class="ti ti-chevron-left" aria-hidden="true"></i></div>
+    <span class="topbar2-title">ISS Details</span>
+    <div class="topbar2-badge"><div class="live-dot"></div>Live</div>
+  </div>
+
+  <div class="meta-card">
+    <div class="meta-item">
+      <div class="meta-label">Object</div>
+      <div class="meta-value" style="font-size:11px; color:#B0BCDC;">Intl. Space Station</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Altitude</div>
+      <div class="meta-value">421 <span>km</span></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Velocity</div>
+      <div class="meta-value">27.6k <span>km/h</span></div>
+    </div>
+  </div>
+
+  <div class="orbit-section">
+    <div class="orbit-bg"></div>
+    <div class="orbit-path orbit-path-2"></div>
+    <div class="orbit-path"></div>
+    <div class="orbit-earth"></div>
+    <div class="orbit-iss">
+      <div class="orbit-iss-wings"></div>
+    </div>
+    <div class="orbit-label">Orbit Path Visualization</div>
+  </div>
+
+  <div class="visibility-row">
+    <i class="ti ti-eye visibility-icon" aria-hidden="true"></i>
+    <div class="visibility-text">Visibility Status: <span class="visibility-time">Visible in 14 minutes</span></div>
+  </div>
+
+  <div class="timeline-card">
+    <div class="timeline-label">Timeline Simulation</div>
+    <div class="timeline-track">
+      <div class="timeline-fill"></div>
+      <div class="timeline-dot"></div>
+    </div>
+    <div class="timeline-labels">
+      <span class="active">Now</span>
+      <span>1 Hour</span>
+      <span>Tomorrow</span>
+      <span>Next Week</span>
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-header">Predicted Observation Data</div>
+    <div class="obs-row">
+      <i class="ti ti-clock obs-icon" aria-hidden="true"></i>
+      <span class="obs-name">Next Pass</span>
+      <span class="obs-val">8:43 PM</span>
+    </div>
+    <div class="obs-row">
+      <i class="ti ti-hourglass obs-icon" aria-hidden="true"></i>
+      <span class="obs-name">Duration</span>
+      <span class="obs-val">5 minutes</span>
+    </div>
+    <div class="obs-row">
+      <i class="ti ti-angle obs-icon" aria-hidden="true"></i>
+      <span class="obs-name">Max Elevation</span>
+      <span class="obs-val">67°</span>
+    </div>
+  </div>
+
+  <button class="alert-btn">
+    <i class="ti ti-bell" aria-hidden="true"></i>
+    Set Alert
+  </button>
+</div>
