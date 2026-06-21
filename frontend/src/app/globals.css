@@ -1,0 +1,52 @@
+/*
+ * File: src/app/globals.css
+ * Purpose: Tailwind layers + the CSS-variable definitions that back every
+ *          design token. Theming = swapping these variables.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* HSL channels (no hsl() wrapper) so Tailwind can apply <alpha-value>. */
+    --void: 222 40% 4%;
+    --abyss: 222 38% 7%;
+    --nebula: 224 34% 13%;
+    --frost: 222 100% 95%;
+    --haze: 224 16% 61%;
+    --aurora: 168 70% 59%;
+    --signal: 228 100% 72%;
+    --ember: 32 100% 66%;
+    --hairline: 222 30% 40%;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-void text-frost antialiased;
+    font-feature-settings: 'ss01', 'cv01';
+  }
+
+  /* Respect reduced-motion globally as a quality floor. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  /* Thin, on-brand scrollbars. */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-hairline/50;
+  }
+}
