@@ -50,13 +50,16 @@ To create a real-time celestial intelligence platform that transforms complex as
 
 ### Frontend
 
-* React
-* vite
-* TypeScript
+* Next.js 15 (App Router)
+* TypeScript (Strict Mode)
 * Tailwind CSS
+* Framer Motion
+* Zustand
+* TanStack Query
 * CesiumJS
-* ThreeJS
+* Three.js
 * shadcn/ui
+* Lucide React
 
 ### Backend
 
