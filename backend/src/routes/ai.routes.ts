@@ -1,0 +1,15 @@
+import { Router } from "express";
+
+import {
+    aiController
+}
+from "../controllers/ai.controller";
+
+const router = Router();
+
+router.get(
+    "/",
+    aiController
+);
+
+export default router;
