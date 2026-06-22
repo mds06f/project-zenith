@@ -23,7 +23,7 @@ export async function getCelestialRawData(
 
                 STOP_TIME: stopDate,
 
-                STEP_SIZE: "'1 d'",
+                STEP_SIZE: "'15 min'",
 
                 QUANTITIES: "'1'"
             }

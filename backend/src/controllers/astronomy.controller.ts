@@ -4,10 +4,6 @@ import {
     getAstronomyRawData
 } from "../services/external/astronomyapi.service";
 
-import {
-    computeAstronomyData
-} from "../engine/celestial/astronomy-computation.engine";
-
 export async function astronomyController(
     req: Request,
     res: Response
@@ -19,15 +15,10 @@ export async function astronomyController(
 
         const lon = Number(req.query.lon);
 
-        const raw =
+        const data =
             await getAstronomyRawData(
                 lat,
                 lon
-            );
-
-        const data =
-            computeAstronomyData(
-                raw
             );
 
         res.status(200).json(
@@ -40,7 +31,7 @@ export async function astronomyController(
 
         res.status(500).json({
             error:
-                "Failed to fetch astronomy data"
+                "Failed to fetch moon data"
         });
 
     }

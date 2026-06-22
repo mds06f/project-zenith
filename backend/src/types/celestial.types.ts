@@ -6,6 +6,8 @@ export interface CelestialData {
 
     declination: string;
 
+    magnitude?: number;
+
     distance?: number;
 
     radialVelocity?: number;

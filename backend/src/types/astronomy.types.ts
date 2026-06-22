@@ -1,13 +1,11 @@
 export interface AstronomyData {
 
-    rightAscension: string;
+    moon: {
 
-    declination: string;
+        illumination: number;
 
-    altitude: number;
+        phase: string;
 
-    azimuth: number;
-
-    constellation: string;
+    };
 
 }

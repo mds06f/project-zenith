@@ -11,18 +11,34 @@ export async function observationController(
         const lat = Number(req.query.lat);
         const lon = Number(req.query.lon);
 
+        if (isNaN(lat) || isNaN(lon)) {
+
+            return res.status(400).json({
+                error: "Please provide valid lat and lon query parameters"
+            });
+
+        }
+
         const observation = await getObservation(
             lat,
             lon
         );
 
-        res.status(200).json(observation);
+        return res.status(200).json(
+            observation
+        );
 
     } catch (error) {
 
-        res.status(500).json({
+        console.error(
+            "Observation generation failed:",
+            error
+        );
+
+        return res.status(500).json({
             error: "Failed to generate observation score"
         });
 
     }
+
 }

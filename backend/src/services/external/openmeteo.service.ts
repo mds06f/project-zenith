@@ -10,10 +10,8 @@ export async function getWeather(latitude: number, longitude: number) {
                     latitude,
                     longitude,
                     current: [
-                        "temperature_2m",
                         "cloud_cover",
-                        "relative_humidity_2m",
-                        "wind_speed_10m"
+                        "visibility"
                     ]
                 }
             }
@@ -22,10 +20,8 @@ export async function getWeather(latitude: number, longitude: number) {
         const current = response.data.current;
 
 return {
-    temperature: current.temperature_2m,
     cloudCover: current.cloud_cover,
-    humidity: current.relative_humidity_2m,
-    windSpeed: current.wind_speed_10m
+    visibility: current.visibility
 };
     } catch (error) {
         throw new Error("Failed to fetch weather data");
