@@ -1,29 +1,7 @@
 /**
- * File: src/components/globe/CesiumGlobe.tsx
- * Purpose: Main Earth rendering component — the hero of the entire product.
- *
- * Responsibilities:
- *   - Initialise a CesiumJS Viewer with atmosphere, day/night lighting, stars.
- *   - Auto-rotate slowly while idle; stop on user interaction.
- *   - Render the ISS as a moving point following an orbital polyline.
- *   - Handle left-clicks on the globe: drop an optimistic pin, reverse-geocode,
- *     then commit the resolved Location to the store (opens the report overlay).
- *   - Fly the camera smoothly whenever the active location changes.
- *
- * Used by: app/page.tsx (rendered behind the report overlay; never unmounts so
- *          spatial continuity is preserved — we animate the overlay, not routes).
- *
- * Data flow: store(location) → flyTo;  globe click → reverseGeocode → setLocation.
- *
- * Setup required (see DEVELOPER_HANDBOOK.md → "Cesium setup"):
- *   - `npm install` runs scripts/copy-cesium-assets.mjs (static assets → /public/cesium)
- *   - Optionally set NEXT_PUBLIC_CESIUM_ION_TOKEN for high-res imagery/terrain.
- *
- * Future extensions: live TLE-driven satellite swarm, weather/cloud overlays,
- *   aurora ovals near the poles, signed time-dynamic terminator from backend.
- *
- * NOTE: This component is client-only and must be dynamically imported with
- *   `{ ssr: false }` (Cesium touches `window`). page.tsx does exactly that.
+ * Main interactive globe component.
+ * Clicking a location updates the active observation point
+ * and triggers a new celestial report.
  */
 'use client';
 
@@ -32,8 +10,6 @@ import { useLocationStore } from '@/store/location.store';
 import { useUiStore } from '@/store/ui.store';
 import { locationService } from '@/services/api/location.service';
 
-// Cesium's CSS must be present for widgets/credits to render correctly.
-import 'cesium/Build/Cesium/Widgets/widgets.css';
 
 const ISS_ALTITUDE_M = 421_000;
 
@@ -82,7 +58,9 @@ export default function CesiumGlobe() {
       const { scene } = viewer;
       scene.globe.enableLighting = true; // day/night terminator
       scene.globe.atmosphereLightIntensity = 8.0;
-      scene.skyAtmosphere.show = true; // atmospheric scattering halo
+      if (scene.skyAtmosphere) {
+        scene.skyAtmosphere.show = true;
+      } // atmospheric scattering halo
       scene.fog.enabled = true;
       scene.backgroundColor = Cesium.Color.fromCssColorString('#05060A');
       viewer.creditDisplay.container.style.display = 'none';
@@ -160,12 +138,21 @@ export default function CesiumGlobe() {
     if (!viewer) return;
     (async () => {
       const Cesium = await import('cesium');
+      const existingPin = viewer.entities.getById("active-pin");
+
+      if (existingPin) {
+        viewer.entities.remove(existingPin);
+      }
+
       viewer.entities.add({
-        id: 'active-pin',
-        position: Cesium.Cartesian3.fromDegrees(location.lng, location.lat),
+        id: "active-pin",
+        position: Cesium.Cartesian3.fromDegrees(
+          location.lng,
+          location.lat
+        ),
         point: {
           pixelSize: 12,
-          color: Cesium.Color.fromCssColorString('#4DE0C2'),
+          color: Cesium.Color.CYAN,
           outlineColor: Cesium.Color.WHITE,
           outlineWidth: 2,
         },
