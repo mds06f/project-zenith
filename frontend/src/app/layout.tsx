@@ -9,6 +9,9 @@ import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import { Providers } from './providers';
 import './globals.css';
 
+// Cesium's CSS must be present for widgets/credits to render correctly.
+import 'cesium/Build/Cesium/Widgets/widgets.css';
+
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display', display: 'swap' });
 const body = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
