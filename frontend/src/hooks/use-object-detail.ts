@@ -20,7 +20,7 @@ export function useObjectDetail() {
 
   return useQuery({
     queryKey: ['object', id, location.id, timeline],
-    queryFn: () => satelliteService.detail(id as string, location, timeline),
+    queryFn: ({ signal }) => satelliteService.detail(id as string, location, timeline, signal),
     enabled: Boolean(id),
   });
 }

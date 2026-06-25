@@ -10,7 +10,7 @@
  */
 import type { Location, GeoCoordinate } from '@/types';
 import { DEFAULT_LOCATION } from '@/lib/constants';
-import { isMock, mockResolve, request } from './client';
+import { liveOrMock } from './client';
 
 /** Small offline gazetteer used by the mock branch. */
 const GAZETTEER: Location[] = [
@@ -43,23 +43,28 @@ export const locationService = {
     if (coords) {
       return [{ id: `coord-${coords.lat},${coords.lng}`, name: `${coords.lat.toFixed(3)}, ${coords.lng.toFixed(3)}`, timezone: 'UTC', ...coords }];
     }
-    if (isMock()) {
-      const q = query.toLowerCase();
-      return mockResolve(() => GAZETTEER.filter((l) => l.name.toLowerCase().includes(q) || l.country?.toLowerCase().includes(q)));
-    }
-    return request<Location[]>(`/api/location/search?q=${encodeURIComponent(query)}`);
+    const q = query.toLowerCase();
+    // Live: real worldwide geocoding via the gateway. Fallback: offline gazetteer.
+    return liveOrMock<Location[]>(
+      `/api/location/search?q=${encodeURIComponent(query)}`,
+      () => GAZETTEER.filter((l) => l.name.toLowerCase().includes(q) || l.country?.toLowerCase().includes(q))
+    );
   },
 
-  /** reverseGeocode — resolve a raw map click into a named Location. */
-  async reverseGeocode(coords: GeoCoordinate): Promise<Location> {
-    if (isMock()) {
-      return mockResolve(() => ({
+  /** reverseGeocode — resolve a raw map click into a named Location.
+   *  Accepts an AbortSignal so a rapid second click can cancel the first,
+   *  preventing an older (slower) response from overwriting newer state. */
+  async reverseGeocode(coords: GeoCoordinate, signal?: AbortSignal): Promise<Location> {
+    return liveOrMock<Location>(
+      `/api/location/${coords.lat}/${coords.lng}`,
+      () => ({
         id: `coord-${coords.lat.toFixed(3)},${coords.lng.toFixed(3)}`,
         name: `${coords.lat.toFixed(3)}°, ${coords.lng.toFixed(3)}°`,
         timezone: 'UTC',
         ...coords,
-      }));
-    }
-    return request<Location>(`/api/location/${coords.lat}/${coords.lng}`);
+      }),
+      (x) => x,
+      signal
+    );
   },
 };

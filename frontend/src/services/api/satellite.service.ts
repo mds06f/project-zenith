@@ -9,22 +9,29 @@
  */
 import type { Location, TimelineKey, CelestialObject } from '@/types';
 import { buildReport } from '@/services/mock/mock-data';
-import { isMock, mockResolve, request } from './client';
+import { liveOrMock } from './client';
+
+/** Find an object in the deterministic report, defaulting to the first entry so
+ *  the panel never throws for an id the mock doesn't know. */
+function mockObject(id: string, location: Location, timeline: TimelineKey): CelestialObject {
+  const objs = buildReport(location, timeline).visibleTonight;
+  return objs.find((o) => o.id === id) ?? objs[0]!;
+}
 
 export const satelliteService = {
   async visible(location: Location, timeline: TimelineKey): Promise<CelestialObject[]> {
-    if (isMock()) return mockResolve(() => buildReport(location, timeline).visibleTonight);
-    return request<CelestialObject[]>(`/api/visible/${location.lat}/${location.lng}?t=${timeline}`);
+    return liveOrMock<CelestialObject[]>(
+      `/api/report/${location.lat}/${location.lng}?t=${timeline}`,
+      () => buildReport(location, timeline).visibleTonight
+    );
   },
 
-  async detail(id: string, location: Location, timeline: TimelineKey): Promise<CelestialObject> {
-    if (isMock()) {
-      return mockResolve(() => {
-        const obj = buildReport(location, timeline).visibleTonight.find((o) => o.id === id);
-        if (!obj) throw new Error(`Unknown object: ${id}`);
-        return obj;
-      });
-    }
-    return request<CelestialObject>(`/api/object/${id}?lat=${location.lat}&lng=${location.lng}`);
+  async detail(id: string, location: Location, timeline: TimelineKey, signal?: AbortSignal): Promise<CelestialObject> {
+    return liveOrMock<CelestialObject>(
+      `/api/object/${id}?lat=${location.lat}&lng=${location.lng}`,
+      () => mockObject(id, location, timeline),
+      (x) => x,
+      signal
+    );
   },
 };

@@ -14,8 +14,8 @@
  */
 'use client';
 
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { useEffect } from 'react';
+import { motion, animate } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import type { ObservationScore as Score, ObservationCondition } from '@/types';
 import { Eyebrow, Panel } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -31,15 +31,33 @@ const RADIUS = 54;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function ObservationScore({ score, condition, factors }: Score) {
-  // Animate the number from 0 → score whenever it changes.
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (v) => Math.round(v));
+  // Animate the number from its current value → score whenever it changes.
+  //
+  // NOTE: we drive the displayed number through React state rather than
+  // rendering a MotionValue directly as a child (`<motion.span>{rounded}</…>`).
+  // framer-motion only wires the imperative textContent subscription for a
+  // motion-value child on the first *update* (re-render) of the element and
+  // explicitly skips it on mount. Because this card mounts once when the report
+  // arrives and never re-renders during the one-shot count-up, that subscription
+  // was never established and the number stayed frozen at its initial 0 — even
+  // though the real score (e.g. 23) was passed in correctly. Using state forces
+  // a re-render per frame, so the number always tracks the value.
+  const safeScore = Number.isFinite(score) ? Math.max(0, Math.min(score, 100)) : 0;
+  const [display, setDisplay] = useState(0);
+  const latest = useRef(0);
   useEffect(() => {
-    const controls = animate(count, score, { duration: 1.1, ease: 'easeOut' });
-    return controls.stop;
-  }, [score, count]);
+    const controls = animate(latest.current, safeScore, {
+      duration: 1.1,
+      ease: 'easeOut',
+      onUpdate: (v) => {
+        latest.current = v;
+        setDisplay(Math.round(v));
+      },
+    });
+    return () => controls.stop();
+  }, [safeScore]);
 
-  const dashOffset = CIRCUMFERENCE * (1 - Math.max(0, Math.min(score, 100)) / 100);
+  const dashOffset = CIRCUMFERENCE * (1 - safeScore / 100);
 
   return (
     <Panel className="flex flex-col gap-4">
@@ -64,7 +82,7 @@ export function ObservationScore({ score, condition, factors }: Score) {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <motion.span className="font-mono text-3xl font-semibold text-frost">{rounded}</motion.span>
+            <span className="font-mono text-3xl font-semibold text-frost">{display}</span>
             <span className="font-mono text-[10px] text-haze">/ 100</span>
           </div>
         </div>

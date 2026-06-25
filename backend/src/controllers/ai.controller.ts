@@ -1,69 +1,46 @@
 import { Request, Response } from "express";
 
-import { buildPrompt }
-from "../engine/ai/ai-prompt.engine";
+import { getReport } from "../services/aggregation/report.service";
+import { Location } from "../types/report.types";
 
-import { generateInsight }
-from "../services/external/gemini.service";
-
-export async function aiController(
-    req: Request,
-    res: Response
-) {
-
+/**
+ * GET /api/ai?lat=&lon=
+ * Real, location-aware AI sky narration.
+ *
+ * Previously this endpoint fed Gemini a block of HARDCODED constants (fixed
+ * score, cloud cover, constellation, RA/Dec) and so produced the same answer for
+ * everywhere on Earth. It now runs the real aggregation pipeline (live weather,
+ * moon, ISS, planets) and returns Gemini's narration over those actual numbers.
+ */
+export async function aiController(req: Request, res: Response) {
     try {
+        const lat = Number(req.query.lat);
+        const lon = Number(req.query.lon ?? req.query.lng);
 
-        const prompt = buildPrompt({
+        if (isNaN(lat) || isNaN(lon)) {
+            return res.status(400).json({
+                error: "lat and lon query parameters are required"
+            });
+        }
 
-            score: 91,
+        const location: Location = {
+            id: `coord-${lat.toFixed(3)},${lon.toFixed(3)}`,
+            name: `${lat.toFixed(3)}°, ${lon.toFixed(3)}°`,
+            timezone: "UTC",
+            lat,
+            lng: lon
+        };
 
-            condition: "Excellent",
+        const report = await getReport(location, "now");
 
-            recommendation:
-                "Ideal conditions for observation.",
-
-            cloudCover: 8,
-
-            humidity: 60,
-
-            windSpeed: 9,
-
-            moonPhase: "Waxing Crescent",
-
-            constellation: "Taurus",
-
-            rightAscension: "11 14 45.54",
-
-            declination: "+03 15 39.5",
-
-            satelliteVisible: true
-
+        return res.status(200).json({
+            report: report.narration.text,
+            score: report.score.score,
+            condition: report.score.condition,
+            generatedAt: report.narration.generatedAt
         });
-
-        const report =
-            await generateInsight(
-                prompt
-            );
-
-        res.status(200).json({
-
-            report
-
-        });
-
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-
-            error:
-                "Failed to generate insight"
-
-        });
-
+        return res.status(500).json({ error: "Failed to generate insight" });
     }
-
 }

@@ -33,7 +33,11 @@ export function CelestialReport() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 24 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-auto w-full max-w-md space-y-3"
+          // Bound the report to the viewport and let it scroll. The desktop
+          // layout column is `md:overflow-visible`, so without this the stacked
+          // cards (and the CTA below them) overflowed off-screen with no way to
+          // reach them — which is what made "Visible Tonight" appear unscrollable.
+          className="pointer-events-auto w-full max-w-md space-y-3 overflow-y-auto pr-1 max-h-[calc(100dvh-11rem)]"
           aria-live="polite"
         >
           <div className="flex items-center justify-between px-1">

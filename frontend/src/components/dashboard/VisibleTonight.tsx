@@ -34,7 +34,7 @@ export function VisibleTonight({
       {objects.length === 0 ? (
         <p className="text-sm text-haze">Nothing above the horizon right now. Try a later time on the timeline.</p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="max-h-60 space-y-1 overflow-y-auto pr-1">
           {objects.map((obj, i) => (
             <motion.li
               key={obj.id}

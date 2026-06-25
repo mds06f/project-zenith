@@ -25,7 +25,9 @@ export function useCelestialReport() {
   const query = useQuery({
     // Query key encodes everything the result depends on → automatic refetch.
     queryKey: ['report', location.id, location.lat, location.lng, timeline],
-    queryFn: () => reportService.get(location, timeline),
+    // `signal` is aborted by React Query when the key changes, so a report fetch
+    // for a previous location is cancelled rather than racing the new one.
+    queryFn: ({ signal }) => reportService.get(location, timeline, signal),
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   });

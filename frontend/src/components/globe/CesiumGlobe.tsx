@@ -17,6 +17,10 @@ export default function CesiumGlobe() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   // viewer is held in a ref so React re-renders never recreate the scene.
   const viewerRef = useRef<unknown>(null);
+  // Globe-click race guard: monotonic id of the latest click + the in-flight
+  // reverse-geocode controller, so only the newest selection ever commits.
+  const clickSeqRef = useRef(0);
+  const reverseGeocodeAbortRef = useRef<AbortController | null>(null);
 
   const location = useLocationStore((s) => s.location);
   const setLocation = useLocationStore((s) => s.setLocation);
@@ -26,6 +30,8 @@ export default function CesiumGlobe() {
   // ── One-time scene initialisation ──────────────────────────────────────────
   useEffect(() => {
     let disposed = false;
+    let issTimer: ReturnType<typeof setTimeout> | undefined;
+    let issAbort: AbortController | null = null;
 
     (async () => {
       const Cesium = await import('cesium');
@@ -106,6 +112,59 @@ export default function CesiumGlobe() {
         },
       });
 
+      // ── Real ISS position ──────────────────────────────────────────────────
+      // When a live gateway is configured, poll the backend's satellite.js
+      // propagation (/api/satellite/position) and move the marker to the real
+      // sub-satellite point. Without a gateway the marker stays at its decorative
+      // start position (mock mode).
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+      const live = process.env.NEXT_PUBLIC_DATA_SOURCE === 'live' && !!apiBase;
+      if (live) {
+        const POLL_MS = 5000;          // gap *between* completed polls
+        const POLL_TIMEOUT_MS = 8000;  // drop a stalled request instead of stacking
+
+        // Self-scheduling poll: the next run is queued only after the current one
+        // settles, so a single in-flight request exists at any time. setInterval
+        // (the previous approach) fired regardless of completion, so on an
+        // unstable network slow requests overlapped and fanned out into concurrent
+        // retries that cascaded as the connection degraded.
+        const pollIss = async () => {
+          if (disposed) return;
+          // Don't poll a hidden tab — prevents a backlog firing on refocus.
+          if (typeof document !== 'undefined' && document.hidden) {
+            issTimer = setTimeout(pollIss, POLL_MS);
+            return;
+          }
+          issAbort = new AbortController();
+          const to = setTimeout(() => issAbort?.abort(), POLL_TIMEOUT_MS);
+          try {
+            const res = await fetch(`${apiBase}/api/satellite/position`, {
+              headers: { Accept: 'application/json' },
+              signal: issAbort.signal,
+            });
+            if (res.ok) {
+              const d = (await res.json()) as { latitude?: number; longitude?: number; altitude?: number };
+              if (typeof d.latitude === 'number' && typeof d.longitude === 'number') {
+                const iss = viewer.entities.getById('iss');
+                if (iss) {
+                  iss.position = new Cesium.ConstantPositionProperty(
+                    Cesium.Cartesian3.fromDegrees(d.longitude, d.latitude, (d.altitude ?? 421) * 1000)
+                  );
+                }
+              }
+            }
+          } catch {
+            /* aborts (timeout/unmount) + transient failures: keep last good
+               position, stay silent so cancellations don't spam the console */
+          } finally {
+            clearTimeout(to);
+            issAbort = null;
+            if (!disposed) issTimer = setTimeout(pollIss, POLL_MS);
+          }
+        };
+        void pollIss();
+      }
+
       // ── Click-to-select ────────────────────────────────────────────────────
       const handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
       handler.setInputAction((click: { position: import('cesium').Cartesian2 }) => {
@@ -119,12 +178,30 @@ export default function CesiumGlobe() {
         };
         setPending(coords); // optimistic pin
         setReportOpen(true);
-        void locationService.reverseGeocode(coords).then(setLocation);
+
+        // A newer click cancels the older reverse-geocode and invalidates its
+        // sequence id, so a slow earlier response can never overwrite the newer
+        // selection (the stale-state race when clicking A then B quickly).
+        const seq = ++clickSeqRef.current;
+        reverseGeocodeAbortRef.current?.abort();
+        const controller = new AbortController();
+        reverseGeocodeAbortRef.current = controller;
+        void locationService
+          .reverseGeocode(coords, controller.signal)
+          .then((loc) => {
+            if (seq === clickSeqRef.current) setLocation(loc);
+          })
+          .catch(() => {
+            /* superseded / aborted click — intentional, ignore */
+          });
       }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
     })();
 
     return () => {
       disposed = true;
+      if (issTimer) clearTimeout(issTimer);
+      issAbort?.abort();
+      reverseGeocodeAbortRef.current?.abort();
       const v = viewerRef.current as { destroy?: () => void; isDestroyed?: () => boolean } | null;
       if (v && v.isDestroyed && !v.isDestroyed()) v.destroy?.();
       viewerRef.current = null;
