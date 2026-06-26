@@ -17,7 +17,7 @@ const body = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Project Zenith — The Celestial Lens',
+  title: 'Project Zenith - The Celestial Lens',
   description: 'Point anywhere on Earth and instantly understand everything happening above you.',
 };
 
