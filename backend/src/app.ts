@@ -19,6 +19,7 @@ import aiRoute from "./routes/ai.routes";
 import reportRoute from "./routes/report.routes";
 import objectRoute from "./routes/object.routes";
 import locationRoute from "./routes/location.routes";
+import narrateRoute from "./routes/narrate.routes";
 
 const app = express();
 
@@ -46,5 +47,6 @@ app.use("/api/ai", aiRoute);
 app.use("/api/report", reportRoute);
 app.use("/api/object", objectRoute);
 app.use("/api/location", locationRoute);
+app.use("/api/narrate", narrateRoute);
 
 export default app;

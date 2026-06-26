@@ -1,4 +1,5 @@
 import axios from "axios";
+import { cached, TTL } from "../../utils/cache.util";
 
 export interface LightPollutionData {
     bortleClass: number;
@@ -8,13 +9,17 @@ export async function getLightPollution(
     latitude: number,
     longitude: number
 ): Promise<LightPollutionData> {
-    try {
+    // Light pollution at a coordinate is effectively static — cache 24h. This is
+    // also the flakiest upstream, so a cached good value greatly steadies scores.
+    const key = `lightpollution:${latitude.toFixed(2)},${longitude.toFixed(2)}`;
+    return cached<LightPollutionData>(key, TTL.LIGHT_POLLUTION, async () => {
         const response = await axios.get(
             "https://www.lightpollutionmap.info/QueryRaster/",
             {
                 params: {
                     q: `${latitude},${longitude}`
-                }
+                },
+                timeout: 8000
             }
         );
 
@@ -43,8 +48,5 @@ export async function getLightPollution(
         return {
             bortleClass,
         };
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
+    });
 }

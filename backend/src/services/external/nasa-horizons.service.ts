@@ -1,4 +1,5 @@
 import axios from "axios";
+import { cached, TTL } from "../../utils/cache.util";
 
 export async function getCelestialRawData(
     command: string,
@@ -6,29 +7,35 @@ export async function getCelestialRawData(
     stopDate: string
 ): Promise<string> {
 
-    const response = await axios.get(
-        "https://ssd.jpl.nasa.gov/api/horizons.api",
-        {
-            params: {
+    // Horizons ephemerides for a given body+date are effectively static for the
+    // day; cache 1h to spare the (slow) JPL endpoint on repeated/timeline fetches.
+    const key = `horizons:${command}:${startDate}`;
+    return cached<string>(key, TTL.HORIZONS, async () => {
+        const response = await axios.get(
+            "https://ssd.jpl.nasa.gov/api/horizons.api",
+            {
+                params: {
 
-                format: "json",
+                    format: "json",
 
-                COMMAND: `'${command}'`,
+                    COMMAND: `'${command}'`,
 
-                EPHEM_TYPE: "OBSERVER",
+                    EPHEM_TYPE: "OBSERVER",
 
-                CENTER: "'500@399'",
+                    CENTER: "'500@399'",
 
-                START_TIME: startDate,
+                    START_TIME: startDate,
 
-                STOP_TIME: stopDate,
+                    STOP_TIME: stopDate,
 
-                STEP_SIZE: "'15 min'",
+                    STEP_SIZE: "'15 min'",
 
-                QUANTITIES: "'1'"
+                    QUANTITIES: "'1'"
+                },
+                timeout: 8000
             }
-        }
-    );
+        );
 
-    return response.data.result;
+        return response.data.result;
+    });
 }
