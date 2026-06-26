@@ -22,7 +22,6 @@
 import {
     CelestialReport,
     CelestialObject,
-    CelestialEvent,
     ObservationScore,
     ObservationCondition,
     ObservationFactor,

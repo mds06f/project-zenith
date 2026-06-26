@@ -25,9 +25,6 @@ function rightAscension(l: number, b: number): number {
 function declination(l: number, b: number): number {
     return Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l));
 }
-function azimuth(H: number, phi: number, dec: number): number {
-    return Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi));
-}
 function altitude(H: number, phi: number, dec: number): number {
     return Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
 }
