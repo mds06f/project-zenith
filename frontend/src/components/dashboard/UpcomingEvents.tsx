@@ -9,7 +9,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Rocket, Sparkles, Moon, Orbit, type LucideIcon } from 'lucide-react';
+import { Rocket, Sparkles, Moon, MoonStar, Sunset, Telescope, Orbit, type LucideIcon } from 'lucide-react';
 import type { CelestialEvent, CelestialEventKind } from '@/types';
 import { Eyebrow, Panel } from '@/components/ui/card';
 
@@ -18,6 +18,9 @@ const ICON: Record<CelestialEventKind, LucideIcon> = {
   meteor_shower: Sparkles,
   moonrise: Moon,
   moonset: Moon,
+  moon_phase: MoonStar,
+  sunset: Sunset,
+  twilight: Telescope,
   planetary_alignment: Orbit,
   eclipse: Orbit,
 };
@@ -26,6 +29,9 @@ export function UpcomingEvents({ events }: { events: CelestialEvent[] }) {
   return (
     <Panel className="flex flex-col gap-3">
       <Eyebrow>Upcoming Events</Eyebrow>
+      {events.length === 0 ? (
+        <p className="text-sm text-haze">No notable events in this window.</p>
+      ) : (
       <ul className="divide-y divide-hairline/40">
         {events.map((ev, i) => {
           const Icon = ICON[ev.kind];
@@ -48,6 +54,7 @@ export function UpcomingEvents({ events }: { events: CelestialEvent[] }) {
           );
         })}
       </ul>
+      )}
     </Panel>
   );
 }

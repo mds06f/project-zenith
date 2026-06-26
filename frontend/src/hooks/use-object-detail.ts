@@ -20,7 +20,8 @@ export function useObjectDetail() {
 
   return useQuery({
     queryKey: ['object', id, location.id, timeline],
-    queryFn: ({ signal }) => satelliteService.detail(id as string, location, timeline, signal),
+    // Not cancellable: opening an object's detail should always complete.
+    queryFn: () => satelliteService.detail(id as string, location, timeline),
     enabled: Boolean(id),
   });
 }

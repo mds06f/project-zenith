@@ -25,9 +25,10 @@ export function useCelestialReport() {
   const query = useQuery({
     // Query key encodes everything the result depends on → automatic refetch.
     queryKey: ['report', location.id, location.lat, location.lng, timeline],
-    // `signal` is aborted by React Query when the key changes, so a report fetch
-    // for a previous location is cancelled rather than racing the new one.
-    queryFn: ({ signal }) => reportService.get(location, timeline, signal),
+    // Deliberately NOT passing React Query's signal: a Timeline Simulation change
+    // must always run to completion (and populate the cache), never be cancelled
+    // mid-flight. Stale results are ignored by key; the backend is idempotent.
+    queryFn: () => reportService.get(location, timeline),
     placeholderData: keepPreviousData,
     staleTime: 60_000,
   });

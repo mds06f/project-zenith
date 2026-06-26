@@ -126,6 +126,9 @@ export type CelestialEventKind =
   | 'meteor_shower'
   | 'moonrise'
   | 'moonset'
+  | 'moon_phase'
+  | 'sunset'
+  | 'twilight'
   | 'planetary_alignment'
   | 'eclipse';
 

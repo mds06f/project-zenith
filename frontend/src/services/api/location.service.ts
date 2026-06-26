@@ -37,7 +37,7 @@ export const locationService = {
    * search — suggestions for the search bar. Coordinate input short-circuits to
    * a single synthesized Location.
    */
-  async search(query: string): Promise<Location[]> {
+  async search(query: string, signal?: AbortSignal): Promise<Location[]> {
     if (!query.trim()) return [];
     const coords = parseCoordinates(query);
     if (coords) {
@@ -45,9 +45,12 @@ export const locationService = {
     }
     const q = query.toLowerCase();
     // Live: real worldwide geocoding via the gateway. Fallback: offline gazetteer.
+    // `signal` lets the search bar cancel a superseded keystroke's request.
     return liveOrMock<Location[]>(
       `/api/location/search?q=${encodeURIComponent(query)}`,
-      () => GAZETTEER.filter((l) => l.name.toLowerCase().includes(q) || l.country?.toLowerCase().includes(q))
+      () => GAZETTEER.filter((l) => l.name.toLowerCase().includes(q) || l.country?.toLowerCase().includes(q)),
+      (x) => x,
+      signal
     );
   },
 

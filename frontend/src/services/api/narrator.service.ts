@@ -10,11 +10,20 @@
  */
 import type { Location, TimelineKey, SkyNarration } from '@/types';
 import { buildReport } from '@/services/mock/mock-data';
-import { isMock, mockResolve, request } from './client';
+import { liveOrMock } from './client';
 
 export const narratorService = {
+  /**
+   * Standalone narration for the "Explain Tonight's Sky" button. Uses liveOrMock
+   * so a backend hiccup still yields templated narration — the card is never left
+   * empty. Intentionally NOT cancellable (no signal): a deliberate user action.
+   */
   async narrate(location: Location, timeline: TimelineKey): Promise<SkyNarration> {
-    if (isMock()) return mockResolve(() => buildReport(location, timeline).narration);
-    return request<SkyNarration>(`/api/narrate?lat=${location.lat}&lng=${location.lng}&t=${timeline}`);
+    const qs = `lat=${location.lat}&lng=${location.lng}&t=${timeline}` +
+      `&name=${encodeURIComponent(location.name)}&tz=${encodeURIComponent(location.timezone)}`;
+    return liveOrMock<SkyNarration>(
+      `/api/narrate?${qs}`,
+      () => buildReport(location, timeline).narration
+    );
   },
 };

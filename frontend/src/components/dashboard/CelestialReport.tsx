@@ -5,9 +5,12 @@
  */
 'use client';
 
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sparkles, X } from 'lucide-react';
+import type { SkyNarration } from '@/types';
 import { useCelestialReport } from '@/hooks/use-celestial-report';
+import { useNarrate } from '@/hooks/use-narrate';
 import { useObservationStore } from '@/store/observation.store';
 import { useUiStore } from '@/store/ui.store';
 import { ObservationScore } from './ObservationScore';
@@ -18,11 +21,20 @@ import { Button } from '@/components/ui/button';
 
 
 export function CelestialReport() {
-  const { isFetching, refetch } = useCelestialReport();
+  const { isFetching } = useCelestialReport();
   const report = useObservationStore((s) => s.report);
   const reportOpen = useUiStore((s) => s.reportOpen);
   const selectObject = useUiStore((s) => s.selectObject);
   const setReportOpen = useUiStore((s) => s.setReportOpen);
+
+  // "Explain Tonight's Sky" — a dedicated, non-cancellable narration request.
+  const [narration, setNarration] = useState<SkyNarration | null>(null);
+  const explain = useNarrate(setNarration);
+  // Drop the on-demand narration when the location/timeline changes so the card
+  // returns to that report's own narration.
+  useEffect(() => {
+    setNarration(null);
+  }, [report?.location.id, report?.timeline]);
 
   return (
     <AnimatePresence>
@@ -70,12 +82,21 @@ export function CelestialReport() {
           </div>
 
           <ObservationScore {...report.score} />
-          <SkyNarrator narration={report.narration} loading={isFetching} />
+          <SkyNarrator
+            narration={narration ?? report.narration}
+            loading={isFetching || explain.isPending}
+          />
           <VisibleTonight objects={report.visibleTonight} onSelect={selectObject} />
           <UpcomingEvents events={report.events} />
 
-          <Button variant="primary" size="lg" className="w-full" onClick={() => void refetch()}>
-            <Sparkles size={16} /> Explain Tonight&apos;s Sky
+          <Button
+            variant="primary"
+            size="lg"
+            className="w-full"
+            onClick={() => explain.narrate()}
+            disabled={explain.isPending}
+          >
+            <Sparkles size={16} /> {explain.isPending ? 'Reading the sky…' : "Explain Tonight's Sky"}
           </Button>
         </motion.section>
       )}

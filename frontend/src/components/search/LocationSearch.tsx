@@ -30,19 +30,31 @@ export function LocationSearch() {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Debounced search.
+  // Debounced search. Each keystroke aborts the previous in-flight request so a
+  // slow earlier search can't overwrite newer suggestions (superseded-search
+  // cancellation — the one place we DO cancel).
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
       return;
     }
+    const controller = new AbortController();
     const id = setTimeout(() => {
-      void locationService.search(query).then((r) => {
-        setResults(r);
-        setActive(0);
-      });
+      void locationService
+        .search(query, controller.signal)
+        .then((r) => {
+          if (controller.signal.aborted) return;
+          setResults(r);
+          setActive(0);
+        })
+        .catch(() => {
+          /* superseded/aborted keystroke — ignore */
+        });
     }, 220);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+      controller.abort();
+    };
   }, [query]);
 
   // What the listbox shows: live results, or history when the field is empty.
