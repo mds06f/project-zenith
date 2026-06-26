@@ -12,7 +12,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Bell } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useObjectDetail } from '@/hooks/use-object-detail';
 import { useUiStore } from '@/store/ui.store';
 import { useLocationStore } from '@/store/location.store';
@@ -96,10 +96,6 @@ export function ObjectDetailPanel() {
                   </div>
                 </div>
               )}
-
-              <Button variant="primary" size="md" className="mt-4 w-full">
-                <Bell size={14} /> Set Alert
-              </Button>
             </>
           )}
         </motion.aside>

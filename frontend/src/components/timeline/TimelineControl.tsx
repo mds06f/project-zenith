@@ -20,9 +20,12 @@ export function TimelineControl() {
   const setTimeline = useTimelineStore((s) => s.setTimeline);
 
   return (
-    <Panel className="flex flex-col gap-3">
-      <Eyebrow>Timeline Simulation</Eyebrow>
-      <div className="flex flex-wrap gap-1.5">
+    <Panel className="flex flex-col gap-2.5 px-4 py-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <Eyebrow>Timeline Simulation</Eyebrow>
+        <span className="text-[11px] text-haze/80">Preview the sky at a future moment</span>
+      </div>
+      <div className="flex flex-wrap justify-center gap-1.5">
         {TIMELINE_OPTIONS.map((opt) => {
           const activeOpt = opt.key === timeline;
           return (

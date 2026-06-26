@@ -86,9 +86,9 @@ export function LocationSearch() {
   };
 
   return (
-    <div className="relative w-full max-w-md">
-      <div className="flex items-center gap-2 rounded-full border border-hairline/70 bg-nebula/60 px-4 py-2.5 backdrop-blur-xl focus-within:border-aurora/50 focus-within:shadow-glow">
-        <Search size={16} className="text-haze" />
+    <div className="relative w-full max-w-sm">
+      <div className="flex items-center gap-2 rounded-full border border-hairline/70 bg-nebula/60 px-3.5 py-2 backdrop-blur-xl focus-within:border-aurora/50 focus-within:shadow-glow">
+        <Search size={15} className="shrink-0 text-haze" />
         <input
           ref={inputRef}
           value={query}
@@ -96,7 +96,7 @@ export function LocationSearch() {
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
           onKeyDown={onKeyDown}
-          placeholder="Search a city, country, or 22.57, 88.36"
+          placeholder="Search a city, country, or coordinates"
           className="w-full bg-transparent text-sm text-frost placeholder:text-haze/70 focus:outline-none"
           role="combobox"
           aria-expanded={open}

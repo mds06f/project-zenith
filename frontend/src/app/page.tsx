@@ -8,7 +8,7 @@
  *   1. StarField (Three.js ambient particles)        — fixed, behind everything
  *   2. CesiumGlobe (the living Earth)                  — fills the viewport
  *   3. Vignette + gradient for legibility
- *   4. TopNav (brand, nav, location, settings)
+ *   4. TopNav (brand + "Use My Location")
  *   5. LocationSearch (floating)
  *   6. CelestialReport overlay (left column on desktop, bottom sheet on mobile)
  *   7. TimelineControl (bottom)
@@ -60,9 +60,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* bottom timeline */}
-        <div className="pointer-events-auto px-6 pb-6">
-          <div className="mx-auto max-w-2xl">
+        {/* bottom timeline — its own flex row, so it stays pinned and visible
+            no matter how tall the report or how the search dropdown expands. */}
+        <div className="pointer-events-auto px-6 pb-5">
+          <div className="mx-auto max-w-xl">
             <TimelineControl />
           </div>
         </div>

@@ -1,10 +1,13 @@
 /**
  * File: src/components/dashboard/UpcomingEvents.tsx
- * Purpose: Event feed (ISS pass, meteor shower, moonrise, alignment).
+ * Purpose: "Astronomical Events" feed — the upcoming sun, moon, twilight, meteor
+ *   and ISS-pass highlights for the selected location and time. Labelled
+ *   honestly: in live mode these shift with larger timeline jumps (tomorrow /
+ *   next week); they are NOT a per-minute timeline simulation, so the card name
+ *   avoids implying one.
  * Inputs:  events[] (CelestialEvent)
  * Outputs: iconified rows with a relative time label.
  * Data flow: CelestialReport.events → here.
- * Future enhancement: "Set alert" per row wiring to a notifications service.
  */
 'use client';
 
@@ -28,7 +31,10 @@ const ICON: Record<CelestialEventKind, LucideIcon> = {
 export function UpcomingEvents({ events }: { events: CelestialEvent[] }) {
   return (
     <Panel className="flex flex-col gap-3">
-      <Eyebrow>Upcoming Events</Eyebrow>
+      <div className="flex flex-col gap-0.5">
+        <Eyebrow>Astronomical Events</Eyebrow>
+        <p className="text-[11px] text-haze/80">Sun, moon &amp; sky highlights from the selected time</p>
+      </div>
       {events.length === 0 ? (
         <p className="text-sm text-haze">No notable events in this window.</p>
       ) : (
