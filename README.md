@@ -1,8 +1,5 @@
 <div align="center">
 
-<!-- Project logo placeholder — drop your logo at assets/icons/logo.png -->
-<img src="assets/icons/logo.png" alt="Project Zenith logo" width="140" onerror="this.style.display='none'"/>
-
 # 🌌 Project Zenith: The Celestial Eye
 
 **Point anywhere on Earth and instantly understand everything happening in the sky above it.**
@@ -19,36 +16,43 @@ Built by **Team Juno** for **AstralWeb Innovate 2026**.
 
 </div>
 
----
-
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Problem Statement](#problem-statement)
-- [Solution Overview](#solution-overview)
-- [Key Features](#key-features)
-- [Unique Features](#unique-features)
-- [Technology Stack](#technology-stack)
-- [Architecture Overview](#architecture-overview)
-- [Project Structure](#project-structure)
-- [Core Modules](#core-modules)
-- [External APIs Used](#external-apis-used)
-- [AI Components](#ai-components)
-- [Caching Strategy](#caching-strategy)
-- [Frontend Architecture](#frontend-architecture)
-- [Backend Architecture](#backend-architecture)
-- [Installation & Local Setup](#installation--local-setup)
-- [Production Deployment](#production-deployment)
-- [API Endpoints](#api-endpoints)
-- [Screenshots](#screenshots)
-- [Known Limitations](#known-limitations)
-- [Future Enhancements](#future-enhancements)
-- [Contributors](#contributors)
-- [GitHub Repository](#github-repository)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+```
+Cover
+│
+├── Project Overview
+├── Problem Statement
+├── Solution Overview
+│
+├── Website Functionality
+├── Unique Features
+│
+├── Technology Stack & Dependencies
+├── Architecture Overview
+├── Implementation Approach
+│
+├── Project Structure
+├── Core Modules
+├── External APIs Used
+├── AI Components
+├── Caching Strategy
+├── Frontend Architecture
+├── Backend Architecture
+│
+├── Installation & Local Setup
+├── Production Deployment
+├── API Endpoints
+│
+├── Screenshots
+├── Known Limitations
+├── Future Enhancements
+├── Contributors
+├── GitHub Repository
+├── License
+└── Acknowledgements
 
----
+```
 
 ## Project Overview
 
@@ -61,6 +65,8 @@ all computed from **real, live data sources**.
 
 It was built for **AstralWeb Innovate 2026**, a national-level web-development challenge themed around
 visualizing real-time celestial activity above any location on Earth.
+
+**Live Demo:** https://project-zenith-mocha.vercel.app/
 
 ## Problem Statement
 
@@ -91,7 +97,7 @@ experience stays instant and **never breaks** even when an external API is slow,
 
 ---
 
-## Key Features
+## Website Functionality
 
 - 🌍 **Interactive 3D Earth** — CesiumJS globe with click-to-select, auto-rotation, and a live ISS marker.
 - 🔭 **Observation Quality Score (0–100)** — a single number for "how good is the sky here?", computed
@@ -156,7 +162,7 @@ What sets Zenith apart from a typical "astronomy lookup" app:
 - In-process **TTL cache** (Redis-ready interface)
 
 ### Tooling
-- Git & GitHub · Vercel (frontend) · Figma (design) · npm
+- Git & GitHub · Vercel (frontend) · Render (backend) · npm
 
 ---
 
@@ -190,162 +196,176 @@ contract, and makes the whole thing cacheable.
                                                               (local sun/moon)
 ```
 
-**Data flow for a report:**
+## Implementation Approach
 
-1. Frontend requests `GET /api/report/:lat/:lng?t=<timeline>`.
-2. The gateway converts the timeline key into a concrete instant (`when = now + offset`).
-3. It fans out **in parallel** to weather, light pollution, planet ephemerides, and ISS sources — each
-   call timeout-bounded and cached at its own TTL.
-4. Pure **engines** fuse the raw data: the Observation Score engine, SunCalc (sun/moon/twilight), satellite
-   propagation, magnitude/visibility, and the events builder.
-5. The fused report (minus narration) is cached for 5 minutes; the AI narration is generated and cached
-   separately for 30 minutes.
-6. The frontend stores the report in Zustand and renders each dashboard card.
+Project Zenith follows a modular client-server architecture designed for scalability, maintainability, and real-time performance. The frontend and backend are decoupled, with the backend serving as an aggregation gateway that unifies data from multiple astronomical and environmental services into a single Celestial Report.
 
----
+The implementation workflow is as follows:
 
-## Project Structure
+1. The user selects a location by clicking on the interactive CesiumJS globe or searching for a place.
+2. The frontend sends the selected coordinates and timeline to the Express backend through a REST API request.
+3. The backend retrieves data from multiple external services in parallel, including weather, planetary ephemerides, satellite tracking, light pollution, and geolocation APIs.
+4. The retrieved data is normalized and processed by dedicated computation engines responsible for observation scoring, celestial calculations, timeline simulation, satellite propagation, and astronomical event generation.
+5. Frequently requested responses are cached using a layered TTL caching strategy to reduce latency and minimize external API requests.
+6. The backend aggregates the processed information into a unified Celestial Report and returns it to the frontend.
+7. The frontend renders the report through interactive dashboard components, providing real-time visualization of celestial objects and observation conditions.
+8. AI-generated sky narration is produced using Google Gemini. If the AI service is unavailable, the system automatically generates a deterministic fallback narration to ensure uninterrupted user experience.
 
-```text
+This modular implementation ensures high performance, fault tolerance, and maintainability while enabling future enhancements such as additional celestial objects, new data providers, and advanced visualization features with minimal architectural changes.
+
+```
 project-zenith/
-├── frontend/                     # Next.js 15 application
-│   ├── public/cesium/            # CesiumJS static assets (copied on postinstall)
-│   ├── scripts/                  # copy-cesium-assets build helper
-│   └── src/
-│       ├── app/                  # App Router entry, layout, providers
-│       ├── components/           # dashboard · globe · layout · object · search · timeline · ui
-│       ├── hooks/                # React Query hooks (report, narrate, object detail)
-│       ├── services/             # api/ (gateway clients) + mock/ (offline fallback layer)
-│       ├── store/                # Zustand stores (location, observation, timeline, ui)
-│       ├── lib/                  # constants & utilities
-│       └── types/                # shared TypeScript types
+├── assets/
+│   ├── icons/
+│   └── screenshots/
 │
-├── backend/                      # Express 5 aggregation gateway
-│   └── src/
-│       ├── app.ts                # route mounting + middleware
-│       ├── server.ts             # HTTP + Socket.IO bootstrap
-│       ├── config/               # env loading
-│       ├── controllers/          # thin request handlers
-│       ├── routes/               # route definitions
-│       ├── services/
-│       │   ├── aggregation/      # report · observation · visible-tonight · planet-details
-│       │   └── external/         # one client per upstream API
-│       ├── engine/               # pure computation (astronomy · celestial · observational · timeline)
-│       ├── dto/ · types/         # contracts
-│       ├── utils/                # cache · async · timing helpers
-│       └── websocket/            # Socket.IO manager
+├── backend/                               # Express 5 aggregation gateway
+│   ├── src/
+│   │   ├── config/                        # Environment configuration
+│   │   ├── controllers/                   # API controllers
+│   │   ├── dto/                           # Data Transfer Objects
+│   │   ├── engine/
+│   │   │   ├── astronomy/                 # Astronomical computation engines
+│   │   │   ├── celestial/                 # Celestial object engines
+│   │   │   ├── observational/             # Observation score engine
+│   │   │   └── timeline/                  # Timeline simulation engine
+│   │   ├── routes/                        # API route definitions
+│   │   ├── services/
+│   │   │   ├── aggregation/               # Report aggregation services
+│   │   │   └── external/                  # External API clients
+│   │   ├── types/                         # Shared TypeScript types
+│   │   ├── utils/                         # Cache & utility helpers
+│   │   ├── websocket/                     # Socket.IO manager
+│   │   ├── app.ts                         # Express application
+│   │   └── server.ts                      # HTTP server bootstrap
+│   ├── .env.example
+│   ├── package.json
+│   └── package-lock.json
 │
-├── docs/                         # blueprint (PDF) · architecture diagram · wireframes
-├── assets/                       # icons · screenshots
-├── README.md
-└── .gitignore
+├── frontend/                              # Next.js 15 application
+│   ├── public/
+│   │   └── cesium/                        # CesiumJS static assets
+│   │       ├── Assets/
+│   │       ├── ThirdParty/
+│   │       └── Widgets/
+│   ├── scripts/                           # Build helper scripts
+│   ├── src/
+│   │   ├── app/                           # App Router
+│   │   ├── components/
+│   │   │   ├── dashboard/
+│   │   │   ├── globe/
+│   │   │   ├── layout/
+│   │   │   ├── object/
+│   │   │   ├── search/
+│   │   │   ├── timeline/
+│   │   │   └── ui/
+│   │   ├── hooks/                         # React Query hooks
+│   │   ├── lib/                           # Constants & utilities
+│   │   ├── services/
+│   │   │   ├── api/                       # Backend API clients
+│   │   │   └── mock/                      # Offline/mock data layer
+│   │   ├── store/                         # Zustand stores
+│   │   └── types/                         # Shared frontend types
+│   ├── .env.local.example
+│   ├── next.config.mjs
+│   ├── package.json
+│   └── package-lock.json
+│
+├── .gitignore
+├── LICENSE
+└── README.md
+
 ```
 
 ## Core Modules
 
-| Module | Location | Responsibility |
-|--------|----------|----------------|
-| **Interactive Globe** | `frontend/src/components/globe/` | CesiumJS viewer, click-to-select, ISS marker, ambient starfield |
-| **Celestial Dashboard** | `frontend/src/components/dashboard/` | Score, Visible Tonight, Events, Sky Narrator, report orchestration |
-| **Timeline Simulation** | `frontend/src/components/timeline/` + `engine/timeline/` | Time-scrub control that re-simulates the whole report |
-| **Observation Score Engine** | `backend/src/engine/observational/observation-score.engine.ts` | Fuses clouds, visibility, moon, light pollution into a 0–100 score |
-| **Astronomy Engines** | `backend/src/engine/astronomy/` | SunCalc port + upcoming-events builder (no external API) |
-| **Celestial Engines** | `backend/src/engine/celestial/` | Satellite propagation, magnitude, velocity, altitude parsing, forecast |
-| **Aggregation Services** | `backend/src/services/aggregation/` | Fan-out, fuse, cache, and assemble the final report |
-| **External Services** | `backend/src/services/external/` | One isolated client per upstream API |
-| **Location & Object Inspector** | `frontend/src/components/search/` · `object/` | Worldwide search, reverse-geocode, per-object detail |
+| Module                          | Location                                                              | Responsibility                                                                                                |
+| ------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Interactive Globe**           | `frontend/src/components/globe/`                                      | Renders the CesiumJS globe, location selection, and live ISS visualization.                                   |
+| **Celestial Dashboard**         | `frontend/src/components/dashboard/`                                  | Displays the Celestial Report, observation score, visible objects, events, and AI narration.                  |
+| **Timeline Simulation**         | `frontend/src/components/timeline/` + `backend/src/engine/timeline/`  | Simulates celestial conditions across different time intervals.                                               |
+| **Observation Score Engine**    | `backend/src/engine/observational/`                                   | Computes a 0–100 observation quality score using weather, moon illumination, visibility, and light pollution. |
+| **Astronomy Engines**           | `backend/src/engine/astronomy/`                                       | Performs astronomical calculations including sun, moon, twilight, and event generation.                       |
+| **Celestial Engines**           | `backend/src/engine/celestial/`                                       | Computes satellite propagation, planetary data, object visibility, and celestial calculations.                |
+| **Aggregation Services**        | `backend/src/services/aggregation/`                                   | Aggregates, processes, and caches data from multiple sources into a unified Celestial Report.                 |
+| **External Services**           | `backend/src/services/external/`                                      | Manages communication with external astronomical, weather, and geolocation APIs.                              |
+| **Location & Object Inspector** | `frontend/src/components/search/` + `frontend/src/components/object/` | Provides worldwide location search, reverse geocoding, and detailed celestial object information.             |
 
 ---
 
 ## External APIs Used
 
-| Source | Purpose | Key required? |
-|--------|---------|:-------------:|
-| **NASA JPL Horizons** | Planetary ephemerides & magnitudes | No |
-| **Open-Meteo** | Cloud cover & visibility (hourly forecast) | No |
-| **Open-Meteo Geocoding** | Worldwide location search | No |
-| **Open Notify** | Live ISS latitude/longitude | No |
-| **CelesTrak** | ISS TLE (drives `satellite.js` propagation) | No |
-| **Light Pollution dataset** | Sky brightness at a location | No |
-| **BigDataCloud** | Reverse geocoding (globe click) | No |
-| **N2YO** | Real ISS visible-pass windows | **Yes** (free) |
-| **Google Gemini** | AI Sky Narration | **Yes** (free) |
+| Source                      | Purpose                                                      |  API Key Required? |
+| --------------------------- | ------------------------------------------------------------ | :----------------: |
+| **NASA JPL Horizons**       | Planetary ephemerides, celestial coordinates, and magnitudes |         No         |
+| **Open-Meteo**              | Hourly weather forecast, cloud cover, and visibility         |         No         |
+| **Open-Meteo Geocoding**    | Worldwide location search                                    |         No         |
+| **BigDataCloud**            | Reverse geocoding for selected locations                     |         No         |
+| **CelesTrak**               | ISS TLE data for satellite propagation using `satellite.js`  |         No         |
+| **Open Notify**             | Live ISS position (latitude and longitude)                   |         No         |
+| **Light Pollution Dataset** | Sky brightness and light pollution estimation                |         No         |
+| **N2YO**                    | ISS visible-pass prediction                                  | **Yes** (Optional) |
+| **Google Gemini**           | AI-generated sky narration                                   | **Yes** (Optional) |
 
-> The platform runs fully on **keyless** sources out of the box. The two keyed sources (N2YO, Gemini) are
-> *enhancements*, not requirements — without them the app degrades gracefully (see
-> [Known Limitations](#known-limitations)).
+> Project Zenith is designed to operate using freely available public data sources. Optional API keys for **N2YO** and **Google Gemini** enable enhanced capabilities such as ISS pass prediction and AI-generated sky narration. When these services are unavailable, the platform automatically falls back to deterministic alternatives, ensuring uninterrupted functionality.
 
 ## AI Components
 
 ### Observation Score Engine
-A pure function that converts raw environmental data into a single, honest **0–100** quality score and a
-`Poor → Fair → Good → Excellent` condition label. It weighs **cloud cover**, **atmospheric visibility**,
-**moon illumination**, and **light pollution**, and returns the contributing factors so the UI can explain
-*why* the sky scores the way it does.
 
-### Sky Narration (Google Gemini)
-The `GET /api/narrate` endpoint composes a context object (score, clouds, moon, brightest planet, ISS) and
-asks **Gemini** to write a short, friendly description of the sky. It is wrapped in
-`safe(withTimeout(generate, 6s), fallback)` — if Gemini is slow or quota-limited, a **deterministic
-templated narration built from the same real numbers** is returned instead, so the card is never empty.
-On the frontend it's a TanStack Query *mutation* (not a keyed query), so it's triggered explicitly,
-typewriter-rendered, and never cancelled by a location/timeline change.
+The Observation Score Engine computes a **0–100** quality score that indicates how suitable the current sky is for astronomical observation. It combines multiple environmental factors, including **cloud cover**, **atmospheric visibility**, **moon illumination**, and **light pollution**, and classifies the result as **Poor**, **Fair**, **Good**, or **Excellent**. The score is accompanied by contributing factors so users can understand the conditions affecting visibility.
+
+### AI Sky Narration
+
+Project Zenith uses **Google Gemini** to generate concise, human-friendly descriptions of the current sky based on the selected location and time. The narration summarizes observation conditions, visible celestial objects, and notable astronomical events. If the AI service is unavailable or exceeds its quota, the system automatically generates a deterministic fallback narration using the same real-time data, ensuring uninterrupted functionality.
 
 ### Timeline Simulation
-Each timeline key maps to a minute offset (`now 0 · +1h 60 · +3h 180 · tonight 600 · tomorrow 1440 ·
-next_week 10080`). The gateway threads the resulting instant through **every** source — weather samples the
-nearest forecast hour, the moon is recomputed locally, planet ephemerides are fetched for the target date,
-and events/narration are rebuilt — so the report is genuinely time-aware rather than echoing the same data.
+
+The Timeline Simulation engine allows users to explore celestial conditions across different time intervals, including **Now**, **+1 Hour**, **+3 Hours**, **Tonight**, **Tomorrow**, and **Next Week**. For each selected interval, the backend recomputes weather conditions, planetary positions, moon phase, observation score, and astronomical events, providing a genuinely time-aware celestial report.
 
 ### Astronomical Events
-`buildAstronomicalEvents()` assembles and time-orders the next **sunset, astronomical twilight,
-moonrise/moonset, moon phase (name + % lit), next meteor shower** (from a real annual peak calendar), and
-an **ISS pass** when N2YO supplies one — each labelled with a local clock time or calendar date via the
-location's IANA timezone.
+
+The Astronomical Events engine identifies and organizes significant upcoming events for the selected location, including **sunrise**, **sunset**, **astronomical twilight**, **moonrise**, **moonset**, **moon phase**, **meteor showers**, and **ISS visible passes** (when available). All events are presented using the location's local timezone to improve readability and user experience.
 
 ## Caching Strategy
 
-A single in-process TTL cache (`backend/src/utils/cache.util.ts`) with a `cached(key, ttl, producer)`
-cache-aside helper that logs every hit/miss. It is a **drop-in for Redis** (same `get`/`set` shape via
-`ioredis` later). TanStack Query keeps a client-side cache on top.
+Project Zenith uses a layered caching strategy to improve performance, reduce external API requests, and ensure a responsive user experience. The backend employs an in-memory **TTL (Time-To-Live)** cache for frequently requested data, while the frontend leverages **TanStack Query** for efficient client-side caching and request management.
 
-| Cache | Key | TTL |
-|-------|-----|-----|
-| Location search | `geocode:<query>` | 24h |
-| Reverse geocode | `revgeo:<lat>,<lng>` | 24h (success only) |
-| Weather (hourly) | `weather:<lat>,<lng>` | 10m |
-| ISS TLE | `tle:iss` | 6h |
-| NASA Horizons | `horizons:<body>:<date>` | 1h |
-| Light pollution | `lightpollution:<lat>,<lng>` | 24h |
-| Report | `report:<lat>,<lng>:<timeline>` | 5m |
-| AI narration | `narrate:<lat>,<lng>:<timeline>` | 30m |
+| Cache                | Cache Duration |
+| -------------------- | :------------: |
+| Location Search      |    24 hours    |
+| Reverse Geocoding    |    24 hours    |
+| Weather Data         |   10 minutes   |
+| ISS TLE Data         |     6 hours    |
+| NASA Horizons Data   |     1 hour     |
+| Light Pollution Data |    24 hours    |
+| Celestial Report     |    5 minutes   |
+| AI Sky Narration     |   30 minutes   |
 
-**Effect:** cold report ~10–12 s → warm (same key) **~3 ms**; a new timeline for a known location reuses
-warm weather/TLE/light-pollution and returns in ~1.2 s.
+**Performance Benefits**
+
+* Reduces repeated requests to external APIs.
+* Improves response times for frequently accessed locations.
+* Minimizes latency during timeline simulation by reusing cached data.
+* Provides a smoother user experience while reducing API usage and rate-limit issues.
+
+On a cold request, generating a complete Celestial Report typically takes **10–12 seconds**. For cached requests, response time is reduced to approximately **3 ms**, while timeline updates for previously visited locations typically complete in **about 1.2 seconds**.
 
 ## Frontend Architecture
 
-- **Next.js App Router** with a single product surface (`src/app/page.tsx`) layering a fixed Three.js
-  starfield, the Cesium globe, and the dashboard.
-- **State split:** *UI/selection state* lives in **Zustand** (`location`, `observation`, `timeline`, `ui`
-  stores); *server state* lives in **TanStack Query** hooks (`use-celestial-report`, `use-narrate`,
-  `use-object-detail`).
-- **Service layer:** `services/api/*` are thin gateway clients; `services/mock/*` is a deterministic
-  offline data layer. A `liveOrMock` wrapper means that if the backend is unreachable (or
-  `NEXT_PUBLIC_DATA_SOURCE=mock`), the UI still renders real-shaped data.
-- **Request lifecycle:** location-search autocomplete cancels superseded keystrokes (`AbortController`);
-  the report and narration intentionally run to completion so a timeline change is never lost mid-flight.
+* **Next.js App Router** powers the application with a single entry point (`src/app/page.tsx`), layering the animated **Three.js** starfield, **CesiumJS** globe, and dashboard components into a unified interface.
+* **State Management:** UI state (location, observation, timeline, and interface state) is managed using **Zustand**, while server state is handled through **TanStack Query** hooks (`use-celestial-report`, `use-narrate`, and `use-object-detail`) for caching, synchronization, and request lifecycle management.
+* **Service Layer:** `services/api/*` contains thin backend gateway clients, while `services/mock/*` provides a deterministic offline data layer. The `liveOrMock` abstraction allows the application to seamlessly switch between live and mock data sources.
+* **Request Lifecycle:** Location-search autocomplete cancels superseded requests using `AbortController`, whereas report generation and AI narration requests are intentionally allowed to complete, ensuring timeline changes are never interrupted.
+* **Component Architecture:** The interface is organized into reusable feature-based modules (`dashboard`, `globe`, `timeline`, `search`, `object`, `layout`, and `ui`), promoting modularity, maintainability, and scalability.
 
 ## Backend Architecture
 
-- **Layered:** `routes → controllers → aggregation services → engines → external services`, with `types`,
-  `dto`, and `utils` shared across layers. Controllers stay thin; all fusion logic lives in pure engines
-  that are trivial to test.
-- **Aggregation gateway:** `report.service.ts` is the heart — it fans out in parallel, applies per-upstream
-  timeouts, fuses via the engines, and caches the report and narration separately.
-- **Resilience:** every upstream is `safe(withTimeout(...), fallback)`, so one slow/failed dependency never
-  500s the endpoint.
-- **Real-time:** Socket.IO is bootstrapped in `server.ts` for live updates.
+* **Layered Architecture:** The backend follows a modular structure of **Routes → Controllers → Aggregation Services → Computation Engines → External API Clients**, with shared `types`, `dto`, and `utils` across layers.
+* **Aggregation Gateway:** `report.service.ts` orchestrates the application by performing parallel requests to multiple astronomical and environmental APIs, applying per-service timeouts, normalizing responses, and assembling a unified Celestial Report.
+* **Computation Engines:** Dedicated engines handle observation scoring, SunCalc-based astronomical calculations, satellite propagation using `satellite.js`, timeline simulation, celestial computations, and astronomical event generation.
+* **Caching & Resilience:** Every external request is wrapped with timeout and fallback mechanisms (`safe(withTimeout(...), fallback)`), while layered TTL caching minimizes latency and prevents unnecessary API calls.
+* **Real-Time Infrastructure:** **Socket.IO** is initialized in `server.ts`, providing the foundation for real-time ISS tracking, live notifications, and future event streaming capabilities.
 
 ---
 
@@ -360,7 +380,7 @@ warm weather/TLE/light-pollution and returns in ~1.2 s.
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/<username>/<repository>.git
+git clone https://github.com/Debcode2006/Project-Zenith.git
 cd project-zenith
 ```
 
@@ -373,7 +393,7 @@ cp .env.example .env        # then fill in optional keys (N2YO_API_KEY, GEMINI_A
 
 **Backend environment variables** (`backend/.env`):
 
-| Variable | Required | Description |
+| Variable | Default | Description |
 |----------|:--------:|-------------|
 | `PORT` | No | API port (default `8000`) |
 | `N2YO_API_KEY` | Optional | Enables real ISS visible-pass windows |
@@ -381,14 +401,14 @@ cp .env.example .env        # then fill in optional keys (N2YO_API_KEY, GEMINI_A
 
 ### 3. Install & configure the frontend
 ```bash
-cd ../frontend
+cd frontend
 npm install                 # postinstall copies Cesium assets into public/cesium
 cp .env.local.example .env.local
 ```
 
 **Frontend environment variables** (`frontend/.env.local`):
 
-| Variable | Required | Description |
+| Variable | Default | Description |
 |----------|:--------:|-------------|
 | `NEXT_PUBLIC_API_BASE_URL` | No | Backend URL (default `http://localhost:8000`) |
 | `NEXT_PUBLIC_DATA_SOURCE` | No | `live` (default) or `mock` for fully-offline demo |
@@ -426,7 +446,7 @@ Open **http://localhost:3000** and click anywhere on the globe (or search for a 
 
 ## API Endpoints
 
-All endpoints are mounted under `/api`. The frontend primarily consumes the **aggregation** group.
+All backend endpoints are exposed under the `/api` namespace. The frontend primarily consumes the **aggregation** group.
 
 ### Aggregation (consumed by the frontend)
 | Method | Endpoint | Description |
@@ -445,44 +465,60 @@ All endpoints are mounted under `/api`. The frontend primarily consumes the **ag
 | `GET` | `/api/weather` | Cloud cover & visibility |
 | `GET` | `/api/observation` | Observation Quality Score |
 | `GET` | `/api/lightpollution` | Sky brightness |
-| `GET` | `/api/satellite/iss` · `/api/satellite/position` | ISS position |
+| `GET` | `/api/satellite/iss` | Current ISS information |
+| `GET` | `/api/satellite/position` | Current ISS position |
 | `GET` | `/api/tle` | ISS TLE set |
 | `GET` | `/api/n2yo/passes` | ISS visible passes (needs N2YO key) |
 | `GET` | `/api/planet-details/:body` | Planet ephemeris detail |
-| `GET` | `/api/astronomy` · `/api/celestial` · `/api/timeline` · `/api/ai` | Supporting computation endpoints |
+| `GET` | `/api/astronomy` | Astronomical computations |
+| `GET` | `/api/celestial` | Celestial calculations |
+| `GET` | `/api/timeline` | Timeline simulation |
+| `GET` | `/api/ai` | AI-related services |
 
 ---
 
 ## Screenshots
 
-> _Add captured screenshots to `assets/screenshots/` and reference them here._
+### Landing Page
+<p align="center">
+  <img src="./assets/screenshots/landing_page.png" width="100%" />
+</p>
 
-| Globe & Dashboard | Timeline Simulation | Sky Narration |
-|:---:|:---:|:---:|
-| _placeholder_ | _placeholder_ | _placeholder_ |
+### Location Search
+<p align="center">
+  <img src="./assets/screenshots/search.png" width="100%" />
+</p>
+
+### Astronomical Events
+<p align="center">
+  <img src="./assets/screenshots/events.png" width="50%" />
+</p>
 
 ---
 
 ## Known Limitations
 
-- **ISS next-pass window** requires a valid **N2YO** key; without it the ISS still shows real
-  position/altitude/velocity, only the pass window/event is omitted.
-- **Live AI narration** requires **Gemini** quota; without it a deterministic templated narration (from the
-  same real numbers) is served.
-- **Voice playback (TTS)** for the Sky Narrator is a visual placeholder.
-- **Caching is in-process** — a single instance; multi-instance deploys need the Redis swap.
-- Secondary navigation routes (settings / about / explore) are intentionally minimal.
+* **ISS visible-pass prediction** requires an optional **N2YO API key**. Without it, the application continues to display real-time ISS position, altitude, and velocity, but visible-pass predictions are unavailable.
+* **AI-generated sky narration** depends on the availability of **Google Gemini**. If the service is unavailable or quota limits are reached, the system automatically falls back to a deterministic narration generated from the same real-time data.
+* **Text-to-speech (TTS)** support for AI narration is planned but not yet implemented.
+* **Caching** currently uses an in-memory TTL cache, making it suitable for single-instance deployments. Distributed caching (Redis) is planned for future scalability.
+* **Secondary application pages** (such as Settings, About, and Explore) are intentionally lightweight, with the current development focus centered on the core celestial visualization and reporting experience.
 
 ## Future Enhancements
 
-- 🔁 **Redis-backed cache** for horizontal scaling (interface already in place).
-- 🔊 **Text-to-speech** narration playback.
-- 📡 **Live WebSocket push** of ISS position and event countdowns to the globe.
-- 🛰️ **Multi-satellite tracking** beyond the ISS (Starlink, Hubble, custom TLE sets).
-- 🌠 **Constellation & deep-sky overlays** on the globe and sky view.
-- 👤 **Saved locations & observation history** with user accounts.
-- 📈 **Best-time-tonight recommender** that scans the timeline for the peak observation window.
-- 🌐 **AstronomyAPI integration** for planet visibility & constellation data.
+The modular architecture of Project Zenith enables several future enhancements, including:
+
+* 🔁 **Redis-backed distributed caching** to support horizontal scaling and high-concurrency deployments.
+* 🔊 **AI-powered text-to-speech narration** for a more immersive and accessible user experience.
+* 📡 **Real-time WebSocket updates** for live ISS tracking, satellite movements, and event countdowns.
+* 🛰️ **Multi-satellite tracking** supporting additional satellites such as Starlink, Hubble, and user-defined TLE datasets.
+* 🌠 **Constellation and deep-sky object overlays** for enhanced astronomical visualization.
+* 👤 **User accounts with saved locations, favorites, and observation history**.
+* 📈 **Observation recommendation engine** to identify the best viewing window based on weather and celestial conditions.
+* 🌐 **Additional astronomy data providers** (e.g., AstronomyAPI) for richer planetary, constellation, and deep-sky information.
+* 📱 **Progressive Web App (PWA) and mobile application** for cross-platform accessibility.
+* 🥽 **Augmented Reality (AR) sky view** for real-world celestial object visualization using mobile devices.
+
 
 ---
 
@@ -490,16 +526,22 @@ All endpoints are mounted under `/api`. The frontend primarily consumes the **ag
 
 **Team Name:** Juno
 
-| Member | Role |
-|--------|------|
-| **Madhurima Das** | UI/UX Design, Frontend Development & User Experience |
-| **Debanjan Sarkar** | Research, Data Analysis & Documentation |
-| **Samman Das** | Backend Development, APIs & Real-Time Systems |
+| Member              | Role                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| **Madhurima Das**   | Project Lead, UI/UX Design, Frontend Development, Testing & Integration                    |
+| **Debanjan Sarkar** | Backend Development, API Integration, Real-Time Systems, Testing & Documentation           |
+| **Samman Das**      | Backend Development Support & Implementation Assistance                                    |
 
 ## GitHub Repository
 
 ```
-https://github.com/<username>/<repository>
+https://github.com/Debcode2006/Project-Zenith
+```
+
+## Live Demo
+
+```
+https://project-zenith-mocha.vercel.app/
 ```
 
 ## License
@@ -508,17 +550,18 @@ Released under the **MIT License**. See [`LICENSE`](LICENSE) for details.
 
 ## Acknowledgements
 
-- **NASA JPL Horizons** — planetary ephemerides
-- **Open-Meteo** — weather & geocoding
-- **CelesTrak** & **Open Notify** — ISS orbital & position data
-- **N2YO** — satellite pass predictions
-- **Google Gemini** — AI narration
-- **CesiumJS** — 3D geospatial globe
-- **[SunCalc](https://github.com/mourner/suncalc)** by Vladimir Agafonkin (MIT) — sun/moon computation
-- **AstralWeb Innovate 2026** — for the challenge and theme
+Project Zenith was built using several outstanding open-source projects and public data services. We gratefully acknowledge the following:
+
+* **NASA JPL Horizons** — planetary ephemerides and celestial calculations.
+* **Open-Meteo** — weather forecasting and geocoding services.
+* **CelesTrak**, **Open Notify**, and **N2YO** — satellite orbital data, live ISS tracking, and pass predictions.
+* **Google Gemini** — AI-powered sky narration.
+* **CesiumJS** — interactive 3D geospatial visualization.
+* **SunCalc** (MIT License) — astronomical calculations for the Sun and Moon.
+* **AstralWeb Innovate 2026** — for providing the opportunity and inspiring the development of Project Zenith.
 
 <div align="center">
 
-**Project Zenith — The Celestial Eye** · Built with ☄️ by **Team Juno**
+**Project Zenith — The Celestial Eye** · Developed by **Team Juno**
 
 </div>
